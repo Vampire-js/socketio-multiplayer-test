@@ -17,12 +17,14 @@ app.get('/', (req, res) => {
   res.send('hi')
 });
 
-let users = []
+let players = []
 io.on('connection', (socket) => {
-    socket.on('chat message', (msg) => {
-      console.log('message: ' + msg);
-      io.emit("chat message", msg)
-    });
+  
+  io.emit("player-join", players)
+   socket.on("player-join", e => {
+    players.push(e)
+    console.log(players)
+   })
   });
 server.listen(4000, () => {
   console.log('server running at http://localhost:4000');
