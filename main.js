@@ -1,5 +1,6 @@
 import { Box } from './classes/box';
 import './style.css'
+import { v4 as uuidv4 } from 'uuid';
 
 import { io } from 'socket.io-client';
 
@@ -10,38 +11,39 @@ const c = canvas.getContext("2d")
 canvas.width = innerWidth
 canvas.height = innerHeight
 
-let players = []
+const players =  {}
 
-socket.emit("player-join", {
-  posx: Math.random()*innerWidth,
-  posy: Math.random()*innerHeight,
-  velx: 0,
-  vely:0,
-  color: `#${Math.floor(Math.random()*16777215).toString(16)}`
-} )
+socket.on("updatePlayers", (backendPlayers) => {
+console.log(backendPlayers)
+for(const id in backendPlayers){
+  const backendPlayer = backendPlayers[id]
+ if(!players[id]){
+  players[id] = new Box(c , socket)
+  players[id].position = {x: backendPlayer.x , y:backendPlayer.y}
+  players[id].color = backendPlayer.color
+ }else{
+  players[id].position = {x: backendPlayer.x , y:backendPlayer.y}
+  players[id].color = backendPlayer.color
+  
+ }
+}
 
-socket.on("player-join", e => {
-
-  console.log(e)
-  e.map(a => {
-    let p = new Box(c)
-    p.position = {x:a.posx , y:a.posy}
-    p.velocity = {x:a.velx , y:a.vely}
-    p.color = a.color
-    p.draw()
-    players.push(p)
-  })
+for(const id in players){
+  if(!backendPlayers[id]){
+    delete players[id]
+  }
+}
 })
-
 const animate = () => {
 
   c.fillStyle = "#010d21"
   c.fillRect(0, 0, innerWidth, innerHeight)
-
-  
-  players.map(e => e.update())
-
   requestAnimationFrame(animate)
+
+  for(const id in players){
+    const player = players[id]
+    player.draw()
+  }
 }
 
 animate()
