@@ -18,14 +18,20 @@ app.get('/', (req, res) => {
 });
 
 let players = {}
+let name;
 io.on('connection', (socket) => {
   console.log("user connected")
+  socket.on("player-join" , e => {
+    name = e.name
+  })
+
   players[socket.id] = {
     x: 200 * Math.random(),
     y: 200 * Math.random(),
     color: `#${Math.floor(Math.random()*16777215).toString(16)}`,
     velx:0,
-    vely:0
+    vely:0,
+    name:name
   }
 
   io.emit("updatePlayers", players)
@@ -39,22 +45,23 @@ io.on('connection', (socket) => {
 
   socket.on("keydown", e => {
 
+    let speed = 5
    
     switch (e) {
       case "w":
-        players[socket.id].y += -2
+        players[socket.id].y += -speed
 
         break;
       case "a":
-        players[socket.id].x += -2
+        players[socket.id].x += -speed
 
         break;
       case "d":
-        players[socket.id].x += 2
+        players[socket.id].x += speed
 
         break;
       case "s":
-        players[socket.id].y += 2
+        players[socket.id].y += speed
 
         break;
 
@@ -73,7 +80,7 @@ io.on('connection', (socket) => {
 
   setInterval(() => {
     io.emit("updatePlayers", players)
-  }, 1)
+  }, 0.0001)
 
 server.listen(4000, () => {
   console.log('server running at http://localhost:4000');
